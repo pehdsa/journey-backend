@@ -6,27 +6,29 @@ import { env } from '../env'
 import { ClientError } from "../errors/client-error"; 
 
 export async function confirmParticipant(app: FastifyInstance) {
-    app.withTypeProvider<ZodTypeProvider>().get("/participants/:participantId/confirm", {
+    app.withTypeProvider<ZodTypeProvider>().patch("/participants/:participantId/confirm", {
         schema: {
             params: z.object({
                 participantId: z.string().uuid(),
+            }),
+            body: z.object({
+                name: z.string().min(4),
+                email: z.string().email()
             })
         }
     }, async (request, reply) => {
         const { participantId } = request.params;
+        const { email } = request.body;
 
         const participant = await prisma.participant.findUnique({
             where: {
-                id: participantId
+                id: participantId,
+                email
             }
         })
 
         if (!participant) {
             throw new ClientError("Participant not found");
-        }
-
-        if (participant.is_confirmed) {
-            return reply.redirect(`${env.WEB_BASE_URL}trips/${ participant.trip_id }`)
         }
 
         await prisma.participant.update({

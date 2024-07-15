@@ -1,0 +1,45 @@
+version: "3.6"
+
+services:
+  app:
+    image: journey-app
+    build:
+      args:
+        user: journey
+        uid: 1000
+      context: ./
+      dockerfile: ./docker/Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./:/var/www
+    ports:
+      - 3001:3333
+    depends_on:
+      - db
+    networks:
+      - journey-network
+
+  db:
+    image: postgres:16.2-alpine3.19
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_DB: journey
+      POSTGRES_USER: journey
+      POSTGRES_PASSWORD: journey
+    volumes:
+      - db-data:/var/lib/postgresql
+      - ./docker/postgresql:/docker-entrypoint-initdb.d
+    ports:
+      - 5432:5432
+    networks:
+      - journey-network
+
+volumes:
+  db-data:
+
+networks:
+  journey-network:
+    external: true
+    name: journey-network
