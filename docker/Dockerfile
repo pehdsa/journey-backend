@@ -1,6 +1,6 @@
 FROM node:20.15.1-alpine as build
 
-WORKDIR /app
+WORKDIR /var/www
 
 COPY package*.json ./
 

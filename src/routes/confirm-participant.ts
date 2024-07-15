@@ -18,7 +18,7 @@ export async function confirmParticipant(app: FastifyInstance) {
         }
     }, async (request, reply) => {
         const { participantId } = request.params;
-        const { email } = request.body;
+        const { email, name } = request.body;
 
         const participant = await prisma.participant.findUnique({
             where: {
@@ -33,10 +33,13 @@ export async function confirmParticipant(app: FastifyInstance) {
 
         await prisma.participant.update({
             where: { id: participantId },
-            data: { is_confirmed: true },
+            data: { 
+                name,
+                is_confirmed: true 
+            },
         })
 
-        return reply.redirect(`${env.WEB_BASE_URL}trips/${ participant.trip_id }`)
+        return { participantId: participantId }
 
     })
 }
